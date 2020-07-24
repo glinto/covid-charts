@@ -33,6 +33,9 @@ var $covidChartsNamespace = function() {
 		loadData().then(() => {
 			httpServer.listen(3080, () => {
 				console.log(`Server listening on port ${3080}`);
+				setInterval(() => {
+						loadData();
+					}, 3600 * 4 * 1000);
 			});
 		});
 		
