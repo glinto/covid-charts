@@ -59,7 +59,10 @@ var $covidChartsNamespace = function() {
 				console.log("Processing deaths...")
 				return processDeaths(txt);
 			})
-			.then(() => { resolve(); });
+			.then(() => { resolve(); })
+			.catch((reason) => {
+				console.log(`Data loading failed with reason: ${reason}`)
+			});
 		});
 	}
 
