@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 		<link href="https://unpkg.com/material-components-web@v4.0.0/dist/material-components-web.min.css" rel="stylesheet">
 		<script src="https://unpkg.com/material-components-web@v4.0.0/dist/material-components-web.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
 		<style type="text/css">
 		body { margin: 0; padding: 0; background-color: #404040;}
@@ -62,7 +62,6 @@
 			display: flex;
 			height:82vh; width:100%;
 		}
-		@media screen and (orientation: portrait) { div.unit { height:82vh; width:100%;}  }
 
 
 		</style>
@@ -115,20 +114,20 @@
 		</div></section>
 		<section class="appcontent tabcontent tabcontent--active">
 			<div class="appcontent-inner tabpanel ">
-				<div class="unit" id="chart"></div>
-				<div class="unit" id="chartw"></div>
+				<div class="unit"><canvas id="chart" width="256" height="256"></canvas></div>
+				<div class="unit"></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
 			<div class="appcontent-inner tabpanel ">
-				<div class="unit" id="chartn"></div>
-				<div class="unit" id="chartnw"></div>
+				<div class="unit"><canvas id="chartn" width="256" height="256"></canvas></div>
+				<div class="unit"></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
 			<div class="appcontent-inner tabpanel ">
-				<div class="unit" id="chartd"></div>
-				<div class="unit" id="chartdw"></div>
+				<div class="unit"><canvas id="chartd" width="256" height="256"></canvas></div>
+				<div class="unit"></div>
 			</div>
 		</section>
 		
@@ -171,17 +170,33 @@
 			*/
 
 			var chartData = {};
-			var countries = ['Hungary', 'Slovakia', 'Slovenia', 'Romania', 'Croatia', 
-				'Italy', 'Austria', 'France', 'Spain', 'Germany', 'US'];
-
-			var colors = ['rgba(226,5,49,.8)', 'rgba(74,186,191,.8)', 'rgba(72,210,5,.8)', 'rgba(4,140,147,.8)', 'rgba(243,115,6,.8)', 'rgba(172,44,69,.8)'];
-			var tcolors = ['rgba(226,5,49,.1)', 'rgba(74,186,191,.1)', 'rgba(72,210,5,.1)', 'rgba(4,140,147,.1)', 'rgba(243,115,6,.1)', 'rgba(172,44,69,.1)'];
+			
+			var colors = (function() {
+				var fgColors = ['rgba(226,5,49,.8)', 'rgba(74,186,191,.8)', 'rgba(72,210,5,.8)', 'rgba(4,140,147,.8)', 'rgba(243,115,6,.8)', 'rgba(172,44,69,.8)'];
+				var bgColors = ['rgba(226,5,49,.1)', 'rgba(74,186,191,.1)', 'rgba(72,210,5,.1)', 'rgba(4,140,147,.1)', 'rgba(243,115,6,.1)', 'rgba(172,44,69,.1)'];
+				var index = -1;
+				function getColorPair() {
+					index = ++index % fgColors.length;
+					return {fg: fgColors[index], bg: bgColors[index]};
+				}
+				function reset() {
+					index = -1;
+				}
+				return {
+					getColorPair: getColorPair,
+					reset: reset
+				};
+			})();
+			
 
 			var tabBar, contentEls;
 			var chartData;
 
 			$(document ).ready(function() {
 				//mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+				Chart.defaults.global.defaultFontColor = '#cccccc';
+				Chart.defaults.global.legend.labels.boxWidth = 12;
+				Chart.defaults.global.legend.position = 'bottom';
 				
 				tabBar = new mdc.tabBar.MDCTabBar(document.querySelector('.mdc-tab-bar'));
 				contentEls = document.querySelectorAll('.tabcontent');
@@ -197,57 +212,74 @@
 			});
 
 			function loadData() {
-				var eastCountries = ['Slovakia', 'Romania', 'Croatia', 'Hungary', 'Slovenia'];
+				var eastCountries = ['Hungary', 'Slovakia', 'Romania', 'Slovenia', 'Croatia'];
 				var westCountries = ['US', 'United Kingdom', 'Germany', 'Austria', 'Italy', 'Spain'];
+
+				var percentTooltipOptions = {
+					callbacks: {
+						label: function(context) {
+							var label = '';
+							if (!isNaN(context.value)) {
+								label += (context.value * 100).toFixed(1) + '%';
+							}
+							return label;
+						}
+					}
+				}
+
 				fetch('data?'+Math.random())
 					.then(response => response.json())
 					.then((data) => {
 						chartData = data;
 						makeChart(chartData.cases, eastCountries, 'chart');
-						makeChart(chartData.cases, westCountries, 'chartw');
+						//makeChart(chartData.cases, westCountries, 'chartw');
 						makeChart(chartData.newCases, eastCountries, 'chartn');
-						makeChart(chartData.newCases, westCountries, 'chartnw');
-						makeChart(chartData.deathRates, eastCountries, 'chartd', { 
+						//makeChart(chartData.newCases, westCountries, 'chartnw');
+						makeChart(chartData.deathRates, eastCountries, 'chartd', {
+							ticks: {
+									// Include a dollar sign in the ticks
+									callback: function(value, index, values) {
+										return (value * 100).toFixed(1) + '%';
+									}
+              					}
+						}, percentTooltipOptions);
+						/*makeChart(chartData.deathRates, westCountries, 'chartdw', { 
 							yaxis: { labels: { formatter: (value) => (value*100).toFixed(1) +'%'} },
-						});
-						makeChart(chartData.deathRates, westCountries, 'chartdw', { 
-							yaxis: { labels: { formatter: (value) => (value*100).toFixed(1) +'%'} },
-						});
+						});*/
 					});
 			}
 
-			function makeChart(data, countries, elem, optionMixins = {}) {
-				var options = {
-					chart: {
-						type: 'line',
-						background: 'rgba(4, 140, 147, 0)',
-						toolbar: {show: false},
-						width: '100%',
-						height: '52%'
-					},
-					series: [
-					],
-					xaxis: {
-						categories: chartData.labels,
-						labels: { show: false }
-					},
-					grid: {
-						borderColor: 'rgba(255,255,255, 0.1)'	
-					},
-					yaxis: {
-					
-					},
-					theme: { mode: 'dark'},
-					
-				};
+			function makeChart(data, countries, elem, yTicksMixins = {}, tooltipOptions = {}) {
+				var ctx = document.getElementById(elem).getContext('2d');
+				var datasets = [];
+				colors.reset();
 				countries.forEach((val) => {
-					options.series.push({name: val, data: data[val]});
+					var clr = colors.getColorPair();
+					datasets.push({label: val, data: data[val], borderColor: clr.fg, backgroundColor: clr.bg});
 				});
-				for (s in optionMixins) options[s] = optionMixins[s]
 
-				var chart = new ApexCharts(document.querySelector("#"+elem), options);
+				var options = {
+					type: 'line',
+					data: {
+						labels: chartData.labels,
+						datasets: datasets
+					},
+					options: {
+						tooltips: tooltipOptions,
+						maintainAspectRatio: false,
+						scales: {
+							xAxes: [{
+								display: false, //this will remove all the x-axis grid lines
+							}],
+							yAxes: [ Object.assign({
+								gridLines: { color: 'rgba(255,255,255,0.1)'},
+							}, yTicksMixins)],
+						}
+					}
+				};
 
-				chart.render();
+				var myChart = new Chart(ctx, options);
+
 			}
 
 			
