@@ -115,19 +115,19 @@
 		<section class="appcontent tabcontent tabcontent--active">
 			<div class="appcontent-inner tabpanel ">
 				<div class="unit"><canvas id="chart" width="256" height="256"></canvas></div>
-				<div class="unit"></div>
+				<div class="unit"><canvas id="chartw" width="256" height="256"></canvas></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
 			<div class="appcontent-inner tabpanel ">
 				<div class="unit"><canvas id="chartn" width="256" height="256"></canvas></div>
-				<div class="unit"></div>
+				<div class="unit"><canvas id="chartnw" width="256" height="256"></canvas></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
 			<div class="appcontent-inner tabpanel ">
 				<div class="unit"><canvas id="chartd" width="256" height="256"></canvas></div>
-				<div class="unit"></div>
+				<div class="unit"><canvas id="chartdw" width="256" height="256"></canvas></div>
 			</div>
 		</section>
 		
@@ -213,7 +213,7 @@
 
 			function loadData() {
 				var eastCountries = ['Hungary', 'Slovakia', 'Romania', 'Slovenia', 'Croatia'];
-				var westCountries = ['US', 'United Kingdom', 'Germany', 'Austria', 'Italy', 'Spain'];
+				var westCountries = ['Austria', 'France', 'Poland', 'Czechia', 'Spain'];
 
 				var percentTooltipOptions = {
 					callbacks: {
@@ -232,9 +232,9 @@
 					.then((data) => {
 						chartData = data;
 						makeChart(chartData.cases, eastCountries, 'chart');
-						//makeChart(chartData.cases, westCountries, 'chartw');
+						makeChart(chartData.cases, westCountries, 'chartw');
 						makeChart(chartData.newCases, eastCountries, 'chartn');
-						//makeChart(chartData.newCases, westCountries, 'chartnw');
+						makeChart(chartData.newCases, westCountries, 'chartnw');
 						makeChart(chartData.deathRates, eastCountries, 'chartd', {
 							ticks: {
 									// Include a dollar sign in the ticks
@@ -243,9 +243,14 @@
 									}
               					}
 						}, percentTooltipOptions);
-						/*makeChart(chartData.deathRates, westCountries, 'chartdw', { 
-							yaxis: { labels: { formatter: (value) => (value*100).toFixed(1) +'%'} },
-						});*/
+						makeChart(chartData.deathRates, westCountries, 'chartdw', {
+							ticks: {
+									// Include a dollar sign in the ticks
+									callback: function(value, index, values) {
+										return (value * 100).toFixed(1) + '%';
+									}
+              					}
+						}, percentTooltipOptions);
 					});
 			}
 
