@@ -82,18 +82,18 @@
 					<div class="mdc-tab-scroller__scroll-content">
 						<button class="mdc-tab mdc-tab--active" role="tab" aria-selected="true" tabindex="0">
 							<span class="mdc-tab__content">
-								<span class="mdc-tab__text-label">Confirmed cases</span>
+								<span class="mdc-tab__text-label">7-day new cases</span>
 							</span>
-							<span class="mdc-tab-indicator mdc-tab-indicator--active">
+							<span class="mdc-tab-indicator">
 								<span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
 							</span>
 							<span class="mdc-tab__ripple"></span>
 						</button>
 						<button class="mdc-tab" role="tab" aria-selected="true" tabindex="0">
 							<span class="mdc-tab__content">
-								<span class="mdc-tab__text-label">7-day new cases</span>
+								<span class="mdc-tab__text-label">7-day new deaths</span>
 							</span>
-							<span class="mdc-tab-indicator">
+							<span class="mdc-tab-indicator mdc-tab-indicator--active">
 								<span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
 							</span>
 							<span class="mdc-tab__ripple"></span>
@@ -114,14 +114,14 @@
 		</div></section>
 		<section class="appcontent tabcontent tabcontent--active">
 			<div class="appcontent-inner tabpanel ">
-				<div class="unit"><canvas id="chart" width="256" height="256"></canvas></div>
-				<div class="unit"><canvas id="chartw" width="256" height="256"></canvas></div>
+				<div class="unit"><canvas id="chartn" width="256" height="256"></canvas></div>
+				<div class="unit"><canvas id="chartnw" width="256" height="256"></canvas></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
 			<div class="appcontent-inner tabpanel ">
-				<div class="unit"><canvas id="chartn" width="256" height="256"></canvas></div>
-				<div class="unit"><canvas id="chartnw" width="256" height="256"></canvas></div>
+				<div class="unit"><canvas id="chart" width="256" height="256"></canvas></div>
+				<div class="unit"><canvas id="chartw" width="256" height="256"></canvas></div>
 			</div>
 		</section>
 		<section class="appcontent tabcontent">
@@ -231,8 +231,8 @@
 					.then(response => response.json())
 					.then((data) => {
 						chartData = data;
-						makeChart(chartData.cases, eastCountries, 'chart');
-						makeChart(chartData.cases, westCountries, 'chartw');
+						makeChart(chartData.deaths, eastCountries, 'chart');
+						makeChart(chartData.deaths, westCountries, 'chartw');
 						makeChart(chartData.newCases, eastCountries, 'chartn');
 						makeChart(chartData.newCases, westCountries, 'chartnw');
 						makeChart(chartData.deathRates, eastCountries, 'chartd', {

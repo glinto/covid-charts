@@ -105,9 +105,22 @@ var $covidChartsNamespace = function() {
 		var rows = txt.split('\n');
 		var deaths = aggregateCountries(rows);
 		for (var country in deaths) {
-			if (data.cases[country]) data.deathRates[country] = deaths[country].map((value, index) => {
-				return value / data.cases[country][index];
-			});
+			if (data.cases[country]) {
+				data.deathRates[country] = deaths[country].map((value, index) => {
+					return value / data.cases[country][index];
+				});
+				var increments = [];
+				var previous = 0;
+				var totalIncrement = 0;
+				data.deaths[country] = deaths[country].map((value, index) => {
+					var increment = value - previous;
+					previous = value;
+					increments.push(increment);
+					totalIncrement += increment;
+					if (increments.length > 7) totalIncrement -= increments.shift();
+					return Math.round(totalIncrement / increments.length);
+				});
+			}
 		}
 		resolve();
 		});
